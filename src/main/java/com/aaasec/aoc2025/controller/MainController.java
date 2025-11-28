@@ -1,5 +1,6 @@
 package com.aaasec.aoc2025.controller;
 
+import com.aaasec.aoc2025.configuration.AocProperties;
 import com.aaasec.aoc2025.solve.Solutions;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class MainController {
 
-  Solutions solutions;
+  private final Solutions solutions;
+  private final AocProperties properties;
 
   @Autowired
-  public MainController(final Solutions solutions) {
+  public MainController(final Solutions solutions, AocProperties properties) {
     this.solutions = solutions;
+    this.properties = properties;
   }
 
   /**
@@ -32,6 +35,8 @@ public class MainController {
   @RequestMapping("/")
   public String start(Model model, HttpServletRequest request) {
     model.addAttribute("selectedDay", getDay(request));
+    model.addAttribute("leaderboard", properties.getMyLeaderboard());
+
     return "start";
   }
 
@@ -51,6 +56,7 @@ public class MainController {
     String result = solutions.solve(day, part);
     model.addAttribute("result", result);
     model.addAttribute("selectedDay", day);
+    model.addAttribute("leaderboard", properties.getMyLeaderboard());
     setDay(response, day);
     return "start";
   }

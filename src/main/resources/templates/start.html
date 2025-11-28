@@ -23,17 +23,16 @@
   <div class="card mt-3">
     <div class="card-header">
       <h3>Advent of code 2025</h3>
+      <a href="https://adventofcode.com" target="_blank">https://adventofcode.com</a>
+      <th:block th:if="${leaderboard != null}">
+        &nbsp;|&nbsp;<a th:href="${leaderboard}" target="_blank">Leaderboard</a>
+      </th:block>
     </div>
     <div class="card-body">
       <form class="row g-3">
         <div class="col-md-4">
           <label for="daySelect" class="form-label">Day</label>
           <select id="daySelect" class="form-select" name="day">
-            <option value=""
-                    th:selected="${selectedDay} == null">
-              Choose day...
-            </option>
-
             <!-- Iterate from 1 to 12 -->
             <option th:each="day : ${#numbers.sequence(1,12)}"
                     th:value="${day}"

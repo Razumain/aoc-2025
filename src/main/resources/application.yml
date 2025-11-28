@@ -21,3 +21,4 @@ aoc:
     - ${aoc.base-directory}/11.txt
     - ${aoc.base-directory}/12.txt
   base-directory: "classpath:input"
+  my-leaderboard: "https://adventofcode.com/2025/leaderboard/private/view/3689877"

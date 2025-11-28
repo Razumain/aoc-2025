@@ -12,6 +12,7 @@ import java.util.List;
 @ConfigurationProperties(prefix = "aoc")
 public class AocProperties {
 
+  String myLeaderboard;
   String baseDirectory;
   List<Resource> inputs;
 
