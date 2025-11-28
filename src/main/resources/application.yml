@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: aoc-2025
+server:
+  servlet:
+    context-path: /aoc
+  port: 8080
+
+aoc:
+  inputs:
+    - ${aoc.base-directory}/01.txt
+    - ${aoc.base-directory}/02.txt
+    - ${aoc.base-directory}/03.txt
+    - ${aoc.base-directory}/04.txt
+    - ${aoc.base-directory}/05.txt
+    - ${aoc.base-directory}/06.txt
+    - ${aoc.base-directory}/07.txt
+    - ${aoc.base-directory}/08.txt
+    - ${aoc.base-directory}/09.txt
+    - ${aoc.base-directory}/10.txt
+    - ${aoc.base-directory}/11.txt
+    - ${aoc.base-directory}/12.txt
+  base-directory: "classpath:input"

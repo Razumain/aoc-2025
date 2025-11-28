@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+
+  <!-- Styles -->
+  <script src="webjars/jquery/3.7.1/jquery.min.js"></script>
+  <script src="webjars/popper.js/1.16.1-lts/dist/umd/popper.min.js"></script>
+  <script src="webjars/bootstrap/5.3.8/js/bootstrap.min.js"></script>
+  <script src="webjars/highlightjs/11.10.0/highlight.min.js"></script>
+  <!-- Styles -->
+<!--
+  <link rel="stylesheet" href="css/bootstrap.min.css"/>
+-->
+  <link rel="stylesheet" href="webjars/bootstrap/5.3.8/css/bootstrap.min.css">
+  <link rel="stylesheet" href="webjars/highlightjs/11.10.0/styles/atom-one-light.min.css">
+  <link rel="stylesheet" href="webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.min.css">
+  <title>Advent of code 2025</title>
+</head>
+<body>
+
+<div class="container">
+  <div class="card mt-3">
+    <div class="card-header">
+      <h3>Advent of code 2025</h3>
+    </div>
+    <div class="card-body">
+      <form class="row g-3">
+        <div class="col-md-4">
+          <label for="daySelect" class="form-label">Day</label>
+          <select id="daySelect" class="form-select" name="day">
+            <option value=""
+                    th:selected="${selectedDay} == null">
+              Choose day...
+            </option>
+
+            <!-- Iterate from 1 to 12 -->
+            <option th:each="day : ${#numbers.sequence(1,12)}"
+                    th:value="${day}"
+                    th:text="'Day ' + ${day}"
+                    th:selected="${selectedDay} != null and ${selectedDay} == ${day}">
+            </option>
+          </select>
+        </div>
+
+        <div class="col-12">
+          <!-- Submit for part 1 -->
+          <button type="submit"
+                  class="btn btn-primary me-2"
+                  th:formaction="@{/solve-1}">
+            Solve part 1
+          </button>
+
+          <!-- Submit for part 2 -->
+          <button type="submit"
+                  class="btn btn-secondary"
+                  th:formaction="@{/solve-2}">
+            Solve part 2
+          </button>
+        </div>
+
+      </form>
+
+      <div class="mb-3">
+        <label for="resultTextArea" class="form-label">Result</label>
+        <textarea id="resultTextArea"
+                  class="form-control w-100 font-monospace"
+                  rows="20"
+                  readonly
+                  th:text="${result}"></textarea>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
