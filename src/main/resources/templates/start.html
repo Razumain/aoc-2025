@@ -3,38 +3,303 @@
 <head>
   <meta charset="UTF-8">
 
-  <!-- Styles -->
+  <!-- Scripts -->
   <script src="webjars/jquery/3.7.1/jquery.min.js"></script>
   <script src="webjars/popper.js/1.16.1-lts/dist/umd/popper.min.js"></script>
   <script src="webjars/bootstrap/5.3.8/js/bootstrap.min.js"></script>
   <script src="webjars/highlightjs/11.10.0/highlight.min.js"></script>
+
   <!-- Styles -->
+  <!-- Your own Bootstrap (keep if you have custom build) -->
   <link rel="stylesheet" href="css/bootstrap.min.css"/>
-  <!--
-  <link rel="stylesheet" href="webjars/bootstrap/5.3.8/css/bootstrap.min.css">
-  -->
+  <!-- Highlight + Icons -->
   <link rel="stylesheet" href="webjars/highlightjs/11.10.0/styles/atom-one-light.min.css">
   <link rel="stylesheet" href="webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.min.css">
+
   <title>Advent of code 2025</title>
+
+  <style>
+      :root {
+          --aoc-bg: #050816;
+          --aoc-card-bg: #0b1020;
+          --aoc-border: #1b233b;
+          --aoc-accent: #00ff9c;
+          --aoc-accent-soft: rgba(0, 255, 156, 0.2);
+          --aoc-text-main: #e5f5ff;
+          --aoc-text-muted: #9caec6;
+          --aoc-tab-bg: #0f172a;
+          --aoc-input-bg: #050816;
+      }
+
+      body {
+          background: radial-gradient(circle at top, #152244 0, #050816 60%);
+          color: var(--aoc-text-main);
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          min-height: 100vh;
+          padding-bottom: 2rem;
+      }
+
+      .aoc-shell {
+          padding-top: 2rem;
+      }
+
+      .aoc-card {
+          background: linear-gradient(135deg, #0b1020 0%, #050816 60%);
+          border: 1px solid var(--aoc-border);
+          box-shadow: 0 0 40px rgba(0, 0, 0, 0.45);
+          border-radius: 0.75rem;
+          overflow: hidden;
+      }
+
+      .aoc-header {
+          background: radial-gradient(circle at left, rgba(0, 255, 156, 0.15), transparent 55%);
+          border-bottom: 1px solid var(--aoc-border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+      }
+
+      .aoc-header-title {
+          display: flex;
+          flex-direction: column;
+      }
+
+      .aoc-header-title h3 {
+          margin-bottom: 0.1rem;
+          font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          font-size: 1.1rem;
+      }
+
+      .aoc-year-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.15rem 0.6rem;
+          border-radius: 999px;
+          border: 1px solid var(--aoc-accent-soft);
+          font-size: 0.75rem;
+          color: var(--aoc-accent);
+          background: rgba(0, 0, 0, 0.3);
+      }
+
+      .aoc-header-links a {
+          color: var(--aoc-accent);
+          text-decoration: none;
+          font-size: 0.9rem;
+      }
+
+      .aoc-header-links a:hover {
+          text-decoration: underline;
+      }
+
+      .aoc-header-links span.sep {
+          color: var(--aoc-text-muted);
+          margin: 0 0.4rem;
+      }
+
+      .aoc-body-inner {
+          padding: 1.25rem 1.5rem 1.5rem;
+      }
+
+      /* Controls */
+      label.form-label {
+          color: var(--aoc-text-muted);
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+      }
+
+      .form-select,
+      .form-control {
+          background-color: var(--aoc-input-bg);
+          border-radius: 0.5rem;
+          border: 1px solid var(--aoc-border);
+          color: var(--aoc-text-main);
+      }
+
+      .form-select:focus,
+      .form-control:focus {
+          border-color: var(--aoc-accent);
+          box-shadow: 0 0 0 0.1rem var(--aoc-accent-soft);
+          background-color: var(--aoc-input-bg);
+          color: var(--aoc-text-main);
+      }
+
+      .form-control.font-monospace,
+      .form-select.font-monospace {
+          font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          font-size: 0.85rem;
+      }
+
+      /* Buttons */
+      .btn-primary {
+          background: var(--aoc-accent);
+          border-color: var(--aoc-accent);
+          color: #021010;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          font-size: 0.75rem;
+          border-radius: 999px;
+          padding-inline: 1.1rem;
+          box-shadow: 0 0 20px rgba(0, 255, 156, 0.35);
+      }
+
+      .btn-primary:hover {
+          background: #00e38c;
+          border-color: #00e38c;
+      }
+
+      .btn-secondary {
+          background: transparent;
+          border-color: var(--aoc-border);
+          color: var(--aoc-text-main);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          font-size: 0.75rem;
+          border-radius: 999px;
+          padding-inline: 1.1rem;
+      }
+
+      .btn-secondary:hover {
+          border-color: var(--aoc-accent);
+          color: var(--aoc-accent);
+      }
+
+      .btn-success {
+          background: transparent;
+          border-color: var(--aoc-accent);
+          color: var(--aoc-accent);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          font-size: 0.75rem;
+          border-radius: 999px;
+          padding-inline: 1.1rem;
+      }
+
+      .btn-success:hover {
+          background: var(--aoc-accent-soft);
+      }
+
+      /* Tabs */
+      .nav-tabs {
+          border-bottom: 1px solid var(--aoc-border);
+      }
+
+      .nav-tabs .nav-link {
+          border-radius: 999px 999px 0 0;
+          border: none;
+          color: var(--aoc-text-muted);
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          padding-inline: 1rem;
+          background: transparent;
+      }
+
+      .nav-tabs .nav-link.active {
+          color: var(--aoc-accent);
+          background: rgba(8, 47, 73, 0.6);
+          border-bottom: 2px solid var(--aoc-accent);
+      }
+
+      .nav-tabs .nav-link:focus {
+          outline: none;
+          box-shadow: none;
+      }
+
+      .tab-content {
+          background: var(--aoc-tab-bg);
+          border-radius: 0.75rem;
+          padding: 1rem;
+          border: 1px solid var(--aoc-border);
+          margin-top: -1px;
+      }
+
+      /* Textareas as terminal panes */
+      #resultTextArea,
+      #inputTextArea {
+          background-color: #020617;
+          color: #c7f2ff;
+          border-radius: 0.5rem;
+          border: 1px solid #1f2937;
+          resize: vertical;
+          line-height: 1.4;
+      }
+
+      #resultTextArea {
+          box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+      }
+
+      #inputTextArea {
+          box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.7);
+      }
+
+      #resultTextArea::selection,
+      #inputTextArea::selection {
+          background-color: var(--aoc-accent-soft);
+      }
+
+      .aoc-meta-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+          margin-bottom: 0.5rem;
+          font-size: 0.8rem;
+          color: var(--aoc-text-muted);
+      }
+
+      .aoc-meta-row .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: #22c55e;
+          box-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
+          display: inline-block;
+          margin-right: 0.35rem;
+      }
+  </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="card mt-3">
-    <div class="card-header">
-      <h3>Advent of code 2025</h3>
-      <a href="https://adventofcode.com" target="_blank">https://adventofcode.com</a>
-      <th:block th:if="${leaderboard != null}">
-        &nbsp;|&nbsp;<a th:href="${leaderboard}" target="_blank">Leaderboard</a>
-      </th:block>
+<div class="container aoc-shell">
+  <div class="card aoc-card mt-3">
+    <div class="card-header aoc-header">
+      <div class="aoc-header-title">
+        <h3><i class="bi bi-terminal"></i> Advent of Code</h3>
+        <span class="aoc-year-pill">
+          <i class="bi bi-stars"></i>
+          2025 • Solver Console
+        </span>
+      </div>
+      <div class="aoc-header-links">
+        <a href="https://adventofcode.com" target="_blank">
+          <i class="bi bi-box-arrow-up-right"></i> adventofcode.com
+        </a>
+        <th:block th:if="${leaderboard != null}">
+          <span class="sep">•</span>
+          <a th:href="${leaderboard}" target="_blank">
+            <i class="bi bi-trophy"></i> Leaderboard
+          </a>
+        </th:block>
+      </div>
     </div>
-    <div class="card-body">
+
+    <div class="card-body aoc-body-inner">
       <!-- ONE form for everything -->
       <form class="row g-3">
 
         <div class="col-md-4">
           <label for="daySelect" class="form-label">Day</label>
-          <select id="daySelect" class="form-select" name="day" th:onchange="|window.location='@{/day-change}?day=' + this.value|">
+          <select id="daySelect"
+                  class="form-select font-monospace"
+                  name="day"
+                  th:onchange="|window.location='@{/day-change}?day=' + this.value|">
             <!-- Iterate from 1 to 12 -->
             <option th:each="day : ${#numbers.sequence(1,12)}"
                     th:value="${day}"
@@ -44,13 +309,13 @@
           </select>
         </div>
 
-        <div class="col-12">
+        <div class="col-md-8 d-flex align-items-end justify-content-md-end gap-2">
           <!-- Submit for part 1 (GET) -->
           <button type="submit"
                   class="btn btn-primary me-2"
                   th:formaction="@{/solve-1}"
                   formmethod="get">
-            Solve part 1
+            <i class="bi bi-1-circle"></i> Solve part 1
           </button>
 
           <!-- Submit for part 2 (GET) -->
@@ -58,11 +323,23 @@
                   class="btn btn-secondary"
                   th:formaction="@{/solve-2}"
                   formmethod="get">
-            Solve part 2
+            <i class="bi bi-2-circle"></i> Solve part 2
           </button>
         </div>
 
-        <div class="mt-5">
+        <div class="col-12 mt-4">
+          <div class="aoc-meta-row">
+            <div>
+              <span class="status-dot"></span>
+              <span th:text="'Ready for Day ' + ${selectedDay != null ? selectedDay : '-'}"></span>
+            </div>
+            <div th:if="${result != null}">
+              <i class="bi bi-clock-history"></i>
+              <span>Last run just now</span>
+              <!-- You can replace with your actual timestamp if you have one -->
+            </div>
+          </div>
+
           <!-- Tabs header -->
           <ul class="nav nav-tabs mb-3" id="resultTabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -74,7 +351,7 @@
                       role="tab"
                       aria-controls="solution-pane"
                       aria-selected="true">
-                Solution
+                <i class="bi bi-code-slash"></i> Solution
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -86,7 +363,7 @@
                       role="tab"
                       aria-controls="input-pane"
                       aria-selected="false">
-                Input
+                <i class="bi bi-file-text"></i> Input
               </button>
             </li>
           </ul>
@@ -98,10 +375,10 @@
                  role="tabpanel"
                  aria-labelledby="solution-tab">
               <div class="mb-3">
-                <label for="resultTextArea" class="form-label">Result</label>
+                <label for="resultTextArea" class="form-label">Result output</label>
                 <textarea id="resultTextArea"
                           class="form-control w-100 font-monospace"
-                          rows="20"
+                          rows="40"
                           readonly
                           th:text="${result}"></textarea>
               </div>
@@ -113,10 +390,10 @@
                  role="tabpanel"
                  aria-labelledby="input-tab">
               <div class="mb-3">
-                <label for="inputTextArea" class="form-label">Input data</label>
+                <label for="inputTextArea" class="form-label">Puzzle input</label>
                 <textarea id="inputTextArea"
                           class="form-control w-100 font-monospace"
-                          rows="20"
+                          rows="40"
                           name="input"
                           th:text="${input}">
                 </textarea>
@@ -127,7 +404,7 @@
                       class="btn btn-success"
                       th:formaction="@{/save-input}"
                       formmethod="post">
-                Save input
+                <i class="bi bi-save"></i> Save input
               </button>
             </div>
           </div>
