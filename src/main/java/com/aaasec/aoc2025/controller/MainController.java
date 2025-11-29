@@ -36,7 +36,7 @@ public class MainController {
   public String start(Model model, HttpServletRequest request) {
     model.addAttribute("selectedDay", getDay(request));
     model.addAttribute("leaderboard", properties.getMyLeaderboard());
-
+    model.addAttribute("input", solutions.getInput(getDay(request)));
     return "start";
   }
 
@@ -57,8 +57,21 @@ public class MainController {
     model.addAttribute("result", result);
     model.addAttribute("selectedDay", day);
     model.addAttribute("leaderboard", properties.getMyLeaderboard());
+    model.addAttribute("input", solutions.getInput(day));
     setDay(response, day);
     return "start";
+  }
+
+  @RequestMapping("/save-input")
+  public String saveInput(@RequestParam int day, @RequestParam String input, HttpServletResponse response) throws Exception {
+    solutions.saveInput(day, input);
+    return "redirect:/";
+  }
+
+  @RequestMapping("/day-change")
+  public String dayChange(@RequestParam int day, HttpServletResponse response) throws Exception {
+    setDay(response, day);
+    return "redirect:/";
   }
 
   /**

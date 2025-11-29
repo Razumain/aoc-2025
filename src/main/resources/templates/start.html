@@ -9,9 +9,9 @@
   <script src="webjars/bootstrap/5.3.8/js/bootstrap.min.js"></script>
   <script src="webjars/highlightjs/11.10.0/highlight.min.js"></script>
   <!-- Styles -->
-<!--
-  <link rel="stylesheet" href="css/bootstrap.min.css"/>
--->
+  <!--
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+  -->
   <link rel="stylesheet" href="webjars/bootstrap/5.3.8/css/bootstrap.min.css">
   <link rel="stylesheet" href="webjars/highlightjs/11.10.0/styles/atom-one-light.min.css">
   <link rel="stylesheet" href="webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.min.css">
@@ -29,45 +29,111 @@
       </th:block>
     </div>
     <div class="card-body">
+      <!-- ONE form for everything -->
       <form class="row g-3">
+
         <div class="col-md-4">
           <label for="daySelect" class="form-label">Day</label>
-          <select id="daySelect" class="form-select" name="day">
+          <select id="daySelect" class="form-select" name="day" th:onchange="|window.location='@{/day-change}?day=' + this.value|">
             <!-- Iterate from 1 to 12 -->
             <option th:each="day : ${#numbers.sequence(1,12)}"
                     th:value="${day}"
                     th:text="'Day ' + ${day}"
-                    th:selected="${selectedDay} != null and ${selectedDay} == ${day}">
+                    th:selected="${selectedDay != null and selectedDay == day}">
             </option>
           </select>
         </div>
 
         <div class="col-12">
-          <!-- Submit for part 1 -->
+          <!-- Submit for part 1 (GET) -->
           <button type="submit"
                   class="btn btn-primary me-2"
-                  th:formaction="@{/solve-1}">
+                  th:formaction="@{/solve-1}"
+                  formmethod="get">
             Solve part 1
           </button>
 
-          <!-- Submit for part 2 -->
+          <!-- Submit for part 2 (GET) -->
           <button type="submit"
                   class="btn btn-secondary"
-                  th:formaction="@{/solve-2}">
+                  th:formaction="@{/solve-2}"
+                  formmethod="get">
             Solve part 2
           </button>
         </div>
 
-      </form>
+        <div class="mt-5">
+          <!-- Tabs header -->
+          <ul class="nav nav-tabs mb-3" id="resultTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active"
+                      id="solution-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#solution-pane"
+                      type="button"
+                      role="tab"
+                      aria-controls="solution-pane"
+                      aria-selected="true">
+                Solution
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link"
+                      id="input-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#input-pane"
+                      type="button"
+                      role="tab"
+                      aria-controls="input-pane"
+                      aria-selected="false">
+                Input
+              </button>
+            </li>
+          </ul>
 
-      <div class="mb-3">
-        <label for="resultTextArea" class="form-label">Result</label>
-        <textarea id="resultTextArea"
-                  class="form-control w-100 font-monospace"
-                  rows="20"
-                  readonly
-                  th:text="${result}"></textarea>
-      </div>
+          <div class="tab-content" id="resultTabsContent">
+            <!-- Solution tab -->
+            <div class="tab-pane fade show active"
+                 id="solution-pane"
+                 role="tabpanel"
+                 aria-labelledby="solution-tab">
+              <div class="mb-3">
+                <label for="resultTextArea" class="form-label">Result</label>
+                <textarea id="resultTextArea"
+                          class="form-control w-100 font-monospace"
+                          rows="20"
+                          readonly
+                          th:text="${result}"></textarea>
+              </div>
+            </div>
+
+            <!-- Input tab -->
+            <div class="tab-pane fade"
+                 id="input-pane"
+                 role="tabpanel"
+                 aria-labelledby="input-tab">
+              <div class="mb-3">
+                <label for="inputTextArea" class="form-label">Input data</label>
+                <textarea id="inputTextArea"
+                          class="form-control w-100 font-monospace"
+                          rows="20"
+                          name="input"
+                          th:text="${input}">
+                </textarea>
+              </div>
+
+              <!-- Save button (POST to /save-input) -->
+              <button type="submit"
+                      class="btn btn-success"
+                      th:formaction="@{/save-input}"
+                      formmethod="post">
+                Save input
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </form>
 
     </div>
   </div>

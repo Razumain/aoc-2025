@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 
 @Configuration
@@ -91,4 +93,12 @@ public class Solutions {
     };
   }
 
+  public String getInput(int day) {
+    return String.join(System.lineSeparator(), solutions.get(day - 1).getInput());
+  }
+
+  public void saveInput(int day, String input) throws IOException {
+    solutions.get(day - 1).setInput(List.of(input));
+    Files.write(aocProperties.getInputs().get(day -1).getFilePath(), input.getBytes(StandardCharsets.UTF_8));
+  }
 }

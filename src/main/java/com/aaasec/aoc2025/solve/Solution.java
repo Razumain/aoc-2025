@@ -1,7 +1,10 @@
 package com.aaasec.aoc2025.solve;
 
+import lombok.Getter;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -18,7 +21,7 @@ public abstract class Solution {
   private final String title;
   private final File inputFile;
   protected QuickLogger log;
-  private List<String> input;
+  @Getter private List<String> input;
 
   /**
    * Constructs a new Solution instance.
@@ -33,7 +36,20 @@ public abstract class Solution {
     this.title = title;
     this.inputFile = inputFile;
     this.log = new QuickLogger();
+    readInput();
+  }
+
+  public void readInput() throws IOException {
     this.input = Files.readAllLines(inputFile.toPath());
+  }
+
+  public void setInput(List<String> input) throws IOException {
+    setInput(String.join(System.lineSeparator(), input));
+  }
+
+  public void setInput(String input) throws IOException {
+    Files.write(inputFile.toPath(), input.getBytes(StandardCharsets.UTF_8));
+    readInput();
   }
 
   /**
