@@ -5,13 +5,12 @@ Console for solving problems in Advent of Code 2025
 
 ![Console view](img/view.png)
 
-This is not the most optimal way to solve Andent of Code problems. But for us Spring Boot lovers,
-it is the most fun way!
+This is not the most optimal way to solve Advent of Code problems. But for Spring Boot lovers,
+it is the funnest way!
 
-Just implement the solution class of the day. Everything is served with input. Input storage etc.
+Just implement the solution class of the day. Everything else is taken care of with input view, input storage, etc.
 
-To use this, create a fork, or copy the files locally.
-Set the base location in the application.yml file to a place where your input files are stored.
+To use this project, pull or fork the repo and set the base location in the application.yml file to a place where your input data files are located.
 
 If run with default config. The app is available from: http://localhost:8080/aoc
 
