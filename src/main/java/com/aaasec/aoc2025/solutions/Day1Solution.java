@@ -5,7 +5,6 @@ import com.aaasec.aoc2025.solve.Solution;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Day1Solution extends Solution {
   public Day1Solution(final int day, final String title, final File inputFile) throws IOException {
