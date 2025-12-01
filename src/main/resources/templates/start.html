@@ -8,6 +8,7 @@
   <script src="webjars/popper.js/1.16.1-lts/dist/umd/popper.min.js"></script>
   <script src="webjars/bootstrap/5.3.8/js/bootstrap.min.js"></script>
   <script src="webjars/highlightjs/11.10.0/highlight.min.js"></script>
+  <script src="js/main.js"></script>
 
   <!-- Styles -->
   <!-- Your own Bootstrap (keep if you have custom build) -->
@@ -292,7 +293,7 @@
 
     <div class="card-body aoc-body-inner">
       <!-- ONE form for everything -->
-      <form class="row g-3">
+      <form class="row g-3" method="post">
 
         <div class="col-md-4">
           <label for="daySelect" class="form-label">Day</label>
@@ -314,7 +315,7 @@
           <button type="submit"
                   class="btn btn-primary me-2"
                   th:formaction="@{/solve-1}"
-                  formmethod="get">
+                  formmethod="post">
             <i class="bi bi-1-circle"></i> Solve part 1
           </button>
 
@@ -322,7 +323,7 @@
           <button type="submit"
                   class="btn btn-secondary"
                   th:formaction="@{/solve-2}"
-                  formmethod="get">
+                  formmethod="post">
             <i class="bi bi-2-circle"></i> Solve part 2
           </button>
         </div>
