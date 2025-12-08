@@ -95,12 +95,19 @@ public class Day8Solution extends Solution {
     if (!success) {
       throw new IllegalStateException("Could not find a solution for part 2");
     }
+    int lastConIndex1 = lastConnection.firstIndex;
+    final Point3D lastConPoint1 = points.get(lastConIndex1);
+    int lastConIndex2 = lastConnection.secondIndex;
+    final Point3D lastConPoint2 = points.get(lastConIndex2);
+
+    log.add("Last connection. First point  %d (x=%d, y=%d, z=%d) ", lastConIndex1, lastConPoint1.x, lastConPoint1.y, lastConPoint1.z);
+    log.add("Last connection. Second point %d (x=%d, y=%d, z=%d)", lastConIndex2, lastConPoint2.x, lastConPoint2.y, lastConPoint2.z);
 
     Point3D firstPoint = points.get(lastConnection.firstIndex);
     Point3D secondPoint = points.get(lastConnection.secondIndex);
     BigInteger xProduct = BigInteger.valueOf(firstPoint.x).multiply(BigInteger.valueOf(secondPoint.x));
 
-    log.add("Result part 2 (Last connecting nodes x1 * x2): %s", xProduct.toString());
+    log.add("Result part 2 (Last connecting nodes x1 * x2) = %d * %d = %s", firstPoint.x, secondPoint.x, xProduct.toString());
   }
 
   public List<Connection> getShortestDistances(List<Point3D> points, int targetSize) {
