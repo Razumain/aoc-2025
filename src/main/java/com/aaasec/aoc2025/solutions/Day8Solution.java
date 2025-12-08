@@ -2,13 +2,11 @@ package com.aaasec.aoc2025.solutions;
 
 import com.aaasec.aoc2025.solve.Solution;
 import com.aaasec.aoc2025.utils.DisjointSet;
-import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
