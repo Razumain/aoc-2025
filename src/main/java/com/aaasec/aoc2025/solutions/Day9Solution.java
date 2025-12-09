@@ -33,8 +33,10 @@ public class Day9Solution extends Solution {
         long x = Math.abs (c1.x - c2.x)+1;
         long y = Math.abs (c1.y - c2.y)+1;
         long area = x * y;
-        //log.add("Area between (%d, %d) and (%d, %d) = %d", c1.x, c1.y, c2.x, c2.y , area);
-        maxArea = Math.max(maxArea, area);
+        if (area > maxArea) {
+          log.add("Area between (%d, %d) and (%d, %d) = %d", c1.x, c1.y, c2.x, c2.y , area);
+          maxArea = area;
+        }
       }
     }
     log.add("Max area: %s", maxArea);
@@ -45,7 +47,6 @@ public class Day9Solution extends Solution {
 
   @Override
   public void solvePart2(List<String> input) {
-    // 1. Parse corners in loop order
     List<Corner> corners = new ArrayList<>();
     for (String line : input) {
       String[] split = line.split(",");
@@ -54,8 +55,9 @@ public class Day9Solution extends Solution {
       corners.add(new Corner(x, y));
     }
     int n = corners.size();
+    log.add("Number of defined tiles: %s", n);
+    log.add("Number of possible areas: %d", (n*(n-1))/2);
 
-    // 2. Build xStops and yStops (unique sorted)
     TreeSet<Long> xSet = new TreeSet<>();
     TreeSet<Long> ySet = new TreeSet<>();
     for (Corner c : corners) {
@@ -63,8 +65,6 @@ public class Day9Solution extends Solution {
       ySet.add(c.y());
     }
 
-
-    // My collections here
     Map<Long, List<Corner>> xMap = new HashMap<>();
     Map<Long, List<Corner>> yMap = new HashMap<>();
     Map<Long, Span> yInteriorSpanByX = new HashMap<>();
@@ -109,6 +109,7 @@ public class Day9Solution extends Solution {
     }
 
     long maxArea = 0;
+    long disqualifiedCount = 0;
     for (int i = 0; i < n; i++) {
       for (int j = i+1; j < n; j++) {
         Corner c1 = corners.get(i);
@@ -118,13 +119,17 @@ public class Day9Solution extends Solution {
         long area = x * y;
         if (area > maxArea) {
           if (boundaryTest(c1, c2, ySet, xInteriorSpanByY, xSet, yInteriorSpanByX)) {
+            log.add("Area between (%d, %d) and (%d, %d) = %d", c1.x, c1.y, c2.x, c2.y , area);
             maxArea = area;
+          } else {
+            disqualifiedCount++;
           }
         }
       }
     }
+    log.add("Disqualified count: %s", disqualifiedCount);
 
-    log.add("MaxArea: %s", maxArea);
+    log.lfadd("MaxArea: %s", maxArea);
   }
 
   private Span getBoundary(long minLine, long maxLine, long edgeCornerVal1, long edgeCornerVal2) {
