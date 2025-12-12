@@ -1,18 +1,5 @@
 package com.aaasec.aoc2025.utils.dlx;
 
-// Author: Rafal Szymanski <me@rafal.io>
-// Modified: add support for SECONDARY columns (at-most-one constraints).
-//
-// Usage notes:
-// - By default (old behavior), all columns are PRIMARY (exact cover of all columns).
-// - To use secondary columns, call the constructor with primaryCols:
-//     new DancingLinks(grid, primaryCols, handler)
-//   Columns [0..primaryCols-1] are PRIMARY; [primaryCols..COLS-1] are SECONDARY.
-//
-// Secondary columns are not linked into the header row. They can still be covered/uncovered
-// when a chosen row touches them, enforcing "at most once", but they are not required to be
-// covered for a solution.
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +12,6 @@ public class DancingLinks {
     DancingNode L, R, U, D;
     ColumnNode C;
 
-    // hooks node n1 `below` current node
     DancingNode hookDown(DancingNode n1) {
       assert (this.C == n1.C);
       n1.D = this.D;
@@ -35,7 +21,6 @@ public class DancingLinks {
       return n1;
     }
 
-    // hook a node n1 to the right of `this` node
     DancingNode hookRight(DancingNode n1) {
       n1.R = this.R;
       n1.R.L = n1;
@@ -77,9 +62,9 @@ public class DancingLinks {
   }
 
   class ColumnNode extends DancingNode {
-    int size; // number of ones in current column
+    int size;         // number of ones in current column
     String name;
-    boolean primary; // PRIMARY => exact cover required; SECONDARY => at-most-one
+    boolean primary;  // PRIMARY => must be covered; SECONDARY => at-most-one
 
     public ColumnNode(String n, boolean primary) {
       super();
@@ -90,7 +75,7 @@ public class DancingLinks {
     }
 
     void cover() {
-      // Only PRIMARY columns are in the header list.
+      // Only PRIMARY columns are linked into the header list.
       if (primary) unlinkLR();
 
       for (DancingNode i = this.D; i != this; i = i.D) {
@@ -122,7 +107,7 @@ public class DancingLinks {
   private SolutionHandler handler;
   private List<DancingNode> answer;
 
-  private int primaryCols; // number of PRIMARY columns at start (0..primaryCols-1)
+  private int primaryCols;
 
   // Heart of the algorithm
   private void search(int k) {
@@ -161,11 +146,6 @@ public class DancingLinks {
     }
   }
 
-  private ColumnNode selectColumnNodeNaive() {
-    return (ColumnNode) header.R;
-  }
-
-  // Selects among PRIMARY columns only (because only PRIMARY columns are linked in header row)
   private ColumnNode selectColumnNodeHeuristic() {
     int min = Integer.MAX_VALUE;
     ColumnNode ret = null;
@@ -178,30 +158,27 @@ public class DancingLinks {
     return ret;
   }
 
-  // grid is a grid of 0s and 1s to solve the exact cover for
-  // primaryCols indicates how many leading columns are PRIMARY; the rest are SECONDARY
-  private ColumnNode makeDLXBoard(int[][] grid, int primaryCols) {
+  /**
+   * Dense matrix builder (compatibility).
+   * grid is ROWS x COLS with 0/1.
+   */
+  private ColumnNode makeDLXBoardDense(int[][] grid, int primaryCols) {
     final int COLS = grid[0].length;
     final int ROWS = grid.length;
 
     ColumnNode headerNode = new ColumnNode("header", true);
     ArrayList<ColumnNode> columnNodes = new ArrayList<>(COLS);
 
-    // Create columns: first primaryCols are PRIMARY and linked into header row.
     for (int i = 0; i < COLS; i++) {
       boolean isPrimary = i < primaryCols;
       ColumnNode n = new ColumnNode(Integer.toString(i), isPrimary);
       columnNodes.add(n);
-      if (isPrimary) {
-        headerNode = (ColumnNode) headerNode.hookRight(n);
-      }
+      if (isPrimary) headerNode = (ColumnNode) headerNode.hookRight(n);
     }
 
-    // Restore header reference (same pattern as original code)
     headerNode = headerNode.R.C;
     headerNode.size = primaryCols;
 
-    // Build rows
     for (int i = 0; i < ROWS; i++) {
       DancingNode prev = null;
       for (int j = 0; j < COLS; j++) {
@@ -219,24 +196,74 @@ public class DancingLinks {
     return headerNode;
   }
 
+  /**
+   * Sparse matrix builder (recommended).
+   * rowsOnes is an array of rows; each row contains the column indices that have a 1.
+   * colCount is the total number of columns.
+   */
+  private ColumnNode makeDLXBoardSparse(int colCount, int[][] rowsOnes, int primaryCols) {
+    final int COLS = colCount;
+
+    ColumnNode headerNode = new ColumnNode("header", true);
+    ArrayList<ColumnNode> columnNodes = new ArrayList<>(COLS);
+
+    for (int i = 0; i < COLS; i++) {
+      boolean isPrimary = i < primaryCols;
+      ColumnNode n = new ColumnNode(Integer.toString(i), isPrimary);
+      columnNodes.add(n);
+      if (isPrimary) headerNode = (ColumnNode) headerNode.hookRight(n);
+    }
+
+    headerNode = headerNode.R.C;
+    headerNode.size = primaryCols;
+
+    for (int[] colsInRow : rowsOnes) {
+      DancingNode prev = null;
+      for (int idx = 0; idx < colsInRow.length; idx++) {
+        int colIdx = colsInRow[idx];
+        ColumnNode col = columnNodes.get(colIdx);
+
+        DancingNode newNode = new DancingNode(col);
+        if (prev == null) prev = newNode;
+
+        col.U.hookDown(newNode);
+        prev = prev.hookRight(newNode);
+        col.size++;
+      }
+    }
+
+    return headerNode;
+  }
+
   private void showInfo() {
     System.out.println("Number of updates: " + updates);
   }
 
-  // Old behavior: all columns are PRIMARY (exact cover of all columns)
+  // --------------------
+  // Constructors
+  // --------------------
+
+  // Old behavior: all columns PRIMARY, dense input
   public DancingLinks(int[][] grid) {
     this(grid, grid[0].length, new DefaultHandler());
   }
 
-  // Old behavior: all columns are PRIMARY (exact cover of all columns)
+  // Old behavior: all columns PRIMARY, dense input
   public DancingLinks(int[][] grid, SolutionHandler h) {
     this(grid, grid[0].length, h);
   }
 
-  // New behavior: first primaryCols columns are PRIMARY; remaining are SECONDARY
+  // Dense input + primaryCols
   public DancingLinks(int[][] grid, int primaryCols, SolutionHandler h) {
     this.primaryCols = primaryCols;
-    header = makeDLXBoard(grid, primaryCols);
+    header = makeDLXBoardDense(grid, primaryCols);
+    handler = h;
+  }
+
+  // NEW: Sparse input + primaryCols (recommended for AoC Day 12)
+  public DancingLinks(int colCount, int primaryCols, int[][] rowsOnes, SolutionHandler h) {
+    this.primaryCols = primaryCols;
+    header = makeDLXBoardSparse(colCount, rowsOnes, primaryCols);
     handler = h;
   }
 
@@ -250,5 +277,52 @@ public class DancingLinks {
       // abort on first solution
     }
     if (verbose) showInfo();
-  }}
+  }
 
+  // --------------------
+  // Handler types (as you had them)
+  // --------------------
+
+  public interface SolutionHandler {
+    void handleSolution(List<DancingLinks.DancingNode> solution);
+  }
+
+  public static class DefaultHandler implements SolutionHandler {
+    public void handleSolution(List<DancingLinks.DancingNode> answer) {
+      for (DancingLinks.DancingNode n : answer) {
+        StringBuilder ret = new StringBuilder();
+        ret.append(n.C.name).append(' ');
+        DancingLinks.DancingNode tmp = n.R;
+        while (tmp != n) {
+          ret.append(tmp.C.name).append(' ');
+          tmp = tmp.R;
+        }
+        System.out.println(ret);
+      }
+    }
+  }
+
+  /**
+   * Use this to answer the question "does at least one solution exist?"
+   * It stops the DLX search immediately when the first solution is found.
+   */
+  public static class ExistsSolutionHandler implements SolutionHandler {
+
+    /** Thrown to abort DLX search as soon as a solution is found. */
+    public static final class FoundSolution extends RuntimeException {
+      public FoundSolution() { super("Solution found"); }
+    }
+
+    private boolean found = false;
+
+    public boolean found() {
+      return found;
+    }
+
+    @Override
+    public void handleSolution(List<DancingLinks.DancingNode> solution) {
+      found = true;
+      throw new FoundSolution();
+    }
+  }
+}

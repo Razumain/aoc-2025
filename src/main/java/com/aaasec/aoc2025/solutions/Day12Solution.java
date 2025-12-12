@@ -2,7 +2,6 @@ package com.aaasec.aoc2025.solutions;
 
 import com.aaasec.aoc2025.solve.Solution;
 import com.aaasec.aoc2025.utils.dlx.DancingLinks;
-import com.aaasec.aoc2025.utils.dlx.ExistsSolutionHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +22,7 @@ public class Day12Solution extends Solution {
     List<Present> presents = parsePresents(input);
     List<Space> spaces = parseSpaces(input);
 
+    // Precompute variants once
     List<List<int[][]>> variantsByShape = new ArrayList<>();
     int[] blocks = new int[6];
     for (int s = 0; s < 6; s++) {
@@ -31,31 +31,78 @@ public class Day12Solution extends Solution {
     }
 
     int fitsCount = 0;
-    for (int idx = 0; idx < spaces.size(); idx++ ) {
+
+    for (int idx = 0; idx < spaces.size(); idx++) {
       Space space = spaces.get(idx);
       System.out.printf("Checking space %d (%d x %d)...\n", idx, space.x(), space.y());
-      var spec = DlxMatrixBuilder.buildMatrix(space.x(), space.y(), space.presents(), variantsByShape, blocks);
-      if (spec.matrix().length == 0) { /* impossible by area */ }
-      else {
-        ExistsSolutionHandler h = new ExistsSolutionHandler();
-        DancingLinks dlx = new DancingLinks(spec.matrix(), spec.primaryCols(), h);
-        dlx.runSolver();              // with your internal catch or external catch
-        boolean fits = h.found();
-        if (fits) {
-          fitsCount++;
-          System.out.printf("Space %d fits!\n", idx);
-        };
+      log.add("Checking space %d (%d x %d)...", idx, space.x(), space.y());
+
+      // Optional: avoid printf per space (slow); log occasionally instead
+      // if (idx % 50 == 0) System.out.printf("Checking space %d (%d x %d)...\n", idx, space.x(), space.y());
+
+      // NEW: build SPARSE rows for DLX
+      var spec = DlxMatrixBuilder.buildSparse(space.x(), space.y(), space.presents(), variantsByShape, blocks);
+
+      // If builder pruned it (e.g., area), it can return rowsOnes length 0
+      if (spec.rowsOnes().length == 0) continue;
+
+      DancingLinks.ExistsSolutionHandler h = new DancingLinks.ExistsSolutionHandler();
+
+      // NEW: use sparse ctor: (colCount, primaryCols, rowsOnes, handler)
+      DancingLinks dlx = new DancingLinks(spec.colCount(), spec.primaryCols(), spec.rowsOnes(), h);
+      dlx.runSolver();
+
+      if (h.found()) {
+        fitsCount++;
+        // Optional debug:
+        System.out.printf("Space %d fits! -  Total fits = %d\n", idx, fitsCount);
+        log.add("Space %d fits! -  Total fits = %d", idx, fitsCount);
       }
     }
 
-
+    System.out.printf("Result part 1: %s\n", fitsCount);
     log.add("Result part 1: %s", fitsCount);
   }
 
   @Override
   public void solvePart2(List<String> input) {
-    String result = "";
-    log.add("Result part 2: %s", result);
+
+    List<Present> presents = parsePresents(input);
+    List<Space> spaces = parseSpaces(input);
+
+    // Precompute variants once
+    int[] presentSize = new int[6];
+    for (int s = 0; s < 6; s++) {
+      final Present present = presents.get(s);
+      int[][] shape = present.shape;
+      for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+          if (shape[y][x] == 1) presentSize[s]++;
+        }
+      }
+    }
+
+
+    int fitsCount = 0;
+    int idx = 0;
+    for (Space space : spaces) {
+      idx ++;
+      int size = space.x() * space.y();
+      int requiredArea = 0;
+      int[] presentCount = space.presents();
+      for (int i=0; i<6; i++) {
+        int area = presentCount[i] * presentSize[i];
+        requiredArea += area;
+      }
+      boolean fits = size >= requiredArea;
+      if (fits) {
+        fitsCount++;
+      }
+      log.add("%d: Available %d, Required %d, Diff %d - Fits %s - Total fits %d", idx, size, requiredArea, size - requiredArea, fits ? "true" : "false", fitsCount);
+    }
+
+
+    log.add("Result part 2: %s", fitsCount);
   }
 
 
@@ -231,16 +278,17 @@ public class Day12Solution extends Solution {
 
   public static final class DlxMatrixBuilder {
 
-    public record MatrixSpec(int[][] matrix, int primaryCols) {}
+    /** Sparse DLX input: each row is a list of column indices that are 1. */
+    public record SparseSpec(int colCount, int primaryCols, int[][] rowsOnes) {}
 
     /**
-     * Build DLX matrix for one region:
+     * Build SPARSE DLX rows for one region:
      * - Primary columns: one per required piece instance (sum of counts)
      * - Secondary columns: one per board cell (W*H)
      *
      * variantsByShape.get(s) => List<int[][]> variants, each variant is int[k][2] occupied cells (dx,dy)
      */
-    public static MatrixSpec buildMatrix(
+    public static SparseSpec buildSparse(
         int W,
         int H,
         int[] counts6,
@@ -252,21 +300,23 @@ public class Day12Solution extends Solution {
       for (int shapeId = 0; shapeId < 6; shapeId++) {
         for (int k = 0; k < counts6[shapeId]; k++) instances.add(shapeId);
       }
+
       int P = instances.size();
       int cells = W * H;
-      int cols = P + cells;
+      int colCount = P + cells;
 
-      // Area prune (cheap, huge win)
+      // Area prune
       int requiredArea = 0;
       for (int s = 0; s < 6; s++) requiredArea += counts6[s] * blocksPerShape[s];
       if (requiredArea > cells) {
-        return new MatrixSpec(new int[0][0], P); // signal impossible
+        return new SparseSpec(colCount, P, new int[0][]); // impossible
       }
 
       List<int[]> rows = new ArrayList<>();
 
       for (int inst = 0; inst < P; inst++) {
         int shapeId = instances.get(inst);
+
         for (int[][] variantCells : variantsByShape.get(shapeId)) {
 
           int maxDx = 0, maxDy = 0;
@@ -279,25 +329,27 @@ public class Day12Solution extends Solution {
           for (int ay = 0; ay <= H - 1 - maxDy; ay++) {
             for (int ax = 0; ax <= W - 1 - maxDx; ax++) {
 
-              int[] row = new int[cols];
-              row[inst] = 1; // this instance is placed by this row
+              // Sparse row: [pieceInstanceCol] + [cell columns occupied]
+              int onesLen = 1 + variantCells.length;
+              int[] ones = new int[onesLen];
+              ones[0] = inst; // primary piece-instance column
 
+              int t = 1;
               for (int[] p : variantCells) {
                 int x = ax + p[0];
                 int y = ay + p[1];
                 int cellIndex = y * W + x;
-                row[P + cellIndex] = 1; // occupy this board cell (secondary)
+                ones[t++] = P + cellIndex; // secondary cell column
               }
 
-              rows.add(row);
+              rows.add(ones);
             }
           }
         }
       }
 
-      int[][] matrix = rows.toArray(new int[0][]);
-      return new MatrixSpec(matrix, P);
+      int[][] rowsOnes = rows.toArray(new int[0][]);
+      return new SparseSpec(colCount, P, rowsOnes);
     }
   }
-
 }
