@@ -19,18 +19,31 @@ public class Day11Solution extends Solution {
   public void solvePart1(List<String> input) {
 
     Map<String, List<String>> connections = parseConnectionGraphInput(input);
+    long topoStart = System.nanoTime();
     List<String> sortedTopoList = topoSort(connections);
     Map<String, Long> fromSvr = countPathsFrom("you", connections, sortedTopoList);
     long youToOutConnections = fromSvr.getOrDefault("out", 0L);
+    long topoEnd = System.nanoTime();
 
-    log.add("Result part 1: %s", youToOutConnections);
+    // Try dfs also
+    long dfsStart = System.nanoTime();
+    final long dfsResult = dfsCount("you", "out", connections, new HashMap<>());
+    long dfsEnd = System.nanoTime();
+
+    log.add("Topo sort result part 1: %s", youToOutConnections);
+    log.add("Topo sort time: %s", topoEnd - topoStart);
+    log.add("DFS result part 1: %s", dfsResult);
+    log.add("DFS time: %s", dfsEnd - dfsStart);
   }
 
 
   @Override
   public void solvePart2(List<String> input) {
     Map<String, List<String>> connections = parseConnectionGraphInput(input);
+
     List<String> sortedTopoList = topoSort(connections);
+
+    long topoStart = System.nanoTime();
 
     Map<String, Long> fromSvr = countPathsFrom("svr", connections, sortedTopoList);
     Map<String, Long> fromDac = countPathsFrom("dac", connections, sortedTopoList);
@@ -48,8 +61,29 @@ public class Day11Solution extends Solution {
     // Paths: svr -> fft -> dac -> out
     long fftThenDac = svrToFft * fftToDac * dacToOut;
     long result = dacThenFft + fftThenDac;
+    long topoTime = System.nanoTime() - topoStart;
 
-    log.add("Result part 2: %d", result);
+    long dfsStart = System.nanoTime();
+    long dfsResult = getDfsResultOnPart2(connections);
+    long dfsTime = System.nanoTime() - dfsStart;
+
+    log.add("Topo result part 2: %d", result);
+    log.add("Topo time: %d", topoTime);
+    log.add("DFS result part 2: %d", dfsResult);
+    log.add("DFS time: %d", dfsTime);
+
+  }
+
+  private long getDfsResultOnPart2(final Map<String, List<String>> connections) {
+    final long svrToDac = dfsCount("svr", "dac", connections, new HashMap<>());
+    final long svrToFft = dfsCount("svr", "fft", connections, new HashMap<>());
+    final long dacToFft = dfsCount("dac", "fft", connections, new HashMap<>());
+    final long dacToOut = dfsCount("dac", "out", connections, new HashMap<>());
+    final long fftToDac = dfsCount("fft", "dac", connections, new HashMap<>());
+    final long fftToOut = dfsCount("fft", "out", connections, new HashMap<>());
+    long dacThenFft = svrToDac * dacToFft * fftToOut;
+    long fftThenDac = svrToFft * fftToDac * dacToOut;
+    return dacThenFft + fftThenDac;
   }
 
   /**
@@ -169,6 +203,24 @@ public class Day11Solution extends Solution {
     return graph;
   }
 
+
+
+  long dfsCount(String curr, String target,
+      Map<String, List<String>> graph,
+      Map<String, Long> memo) {
+    if (curr.equals(target)) {
+      return 1L;
+    }
+    if (memo.containsKey(curr)) {
+      return memo.get(curr);
+    }
+    long sum = 0L;
+    for (String next : graph.getOrDefault(curr, List.of())) {
+      sum += dfsCount(next, target, graph, memo);
+    }
+    memo.put(curr, sum);
+    return sum;
+  }
 
 
 

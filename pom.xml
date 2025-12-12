@@ -60,6 +60,11 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.google.ortools</groupId>
+			<artifactId>ortools-java</artifactId>
+			<version>9.14.6206</version>
+		</dependency>
 		<!-- Web Jar dependencies -->
 		<dependency>
 			<groupId>org.webjars</groupId>
