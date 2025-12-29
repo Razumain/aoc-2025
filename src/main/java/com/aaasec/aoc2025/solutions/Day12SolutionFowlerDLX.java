@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Day12SolutionFowler extends Solution {
-  public Day12SolutionFowler(final int day, final String title, final File inputFile) throws IOException {
+public class Day12SolutionFowlerDLX extends Solution {
+  public Day12SolutionFowlerDLX(final int day, final String title, final File inputFile) throws IOException {
     super(day, title, inputFile);
   }
 

@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Day12SolutionOptimized extends Solution {
-  public Day12SolutionOptimized(final int day, final String title, final File inputFile) throws IOException {
+public class Day12SolutionDancingLinks extends Solution {
+  public Day12SolutionDancingLinks(final int day, final String title, final File inputFile) throws IOException {
     super(day, title, inputFile);
   }
 

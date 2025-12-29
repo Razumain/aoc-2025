@@ -3,8 +3,7 @@ package com.aaasec.aoc2025.solve;
 import com.aaasec.aoc2025.configuration.AocProperties;
 import com.aaasec.aoc2025.solutions.Day10Solution;
 import com.aaasec.aoc2025.solutions.Day11Solution;
-import com.aaasec.aoc2025.solutions.Day12SolutionFowler;
-import com.aaasec.aoc2025.solutions.Day12SolutionOptimized;
+import com.aaasec.aoc2025.solutions.Day12Solution;
 import com.aaasec.aoc2025.solutions.Day1Solution;
 import com.aaasec.aoc2025.solutions.Day2Solution;
 import com.aaasec.aoc2025.solutions.Day3Solution;
@@ -73,7 +72,7 @@ public class Solutions {
         new Day11Solution(11,
             null,
             inputs.get(10).getFile()),
-        new Day12SolutionFowler(12,
+        new Day12Solution(12,
             null,
             inputs.get(11).getFile())
     );
