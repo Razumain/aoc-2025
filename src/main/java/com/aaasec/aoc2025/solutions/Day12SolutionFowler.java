@@ -1,7 +1,10 @@
 package com.aaasec.aoc2025.solutions;
 
 import com.aaasec.aoc2025.solve.Solution;
-import com.aaasec.aoc2025.utils.dlx.DancingLinks;
+import dlx.DLX;
+import dlx.DLXResult;
+import dlx.DLXResultProcessor;
+import dlx.data.ColumnObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,8 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Day12Solution extends Solution {
-  public Day12Solution(final int day, final String title, final File inputFile) throws IOException {
+public class Day12SolutionFowler extends Solution {
+  public Day12SolutionFowler(final int day, final String title, final File inputFile) throws IOException {
     super(day, title, inputFile);
   }
 
@@ -33,35 +36,68 @@ public class Day12Solution extends Solution {
     int fitsCount = 0;
 
     for (int idx = 0; idx < spaces.size(); idx++) {
+      System.out.printf("Checking space %d (%d x %d)...\n", idx, spaces.get(idx).x(), spaces.get(idx).y());
       Space space = spaces.get(idx);
-      System.out.printf("Checking space %d (%d x %d)...\n", idx, space.x(), space.y());
-      log.add("Checking space %d (%d x %d)...", idx, space.x(), space.y());
 
-      // Optional: avoid printf per space (slow); log occasionally instead
-      // if (idx % 50 == 0) System.out.printf("Checking space %d (%d x %d)...\n", idx, space.x(), space.y());
+      var spec = DlxMatrixBuilder.buildSparse(
+          space.x(), space.y(),
+          space.presents(),
+          variantsByShape,
+          blocks
+      );
 
-      // NEW: build SPARSE rows for DLX
-      var spec = DlxMatrixBuilder.buildSparse(space.x(), space.y(), space.presents(), variantsByShape, blocks);
-
-      // If builder pruned it (e.g., area), it can return rowsOnes length 0
+      // Area-pruned
       if (spec.rowsOnes().length == 0) continue;
 
-      DancingLinks.ExistsSolutionHandler h = new DancingLinks.ExistsSolutionHandler();
+      int colCount = spec.colCount();
+      int primaryCols = spec.primaryCols();
 
-      // NEW: use sparse ctor: (colCount, primaryCols, rowsOnes, handler)
-      DancingLinks dlx = new DancingLinks(spec.colCount(), spec.primaryCols(), spec.rowsOnes(), h);
-      dlx.runSolver();
+      // Convert sparse rows → byte matrix (for now)
+      byte[][] matrix = toByteMatrix(colCount, spec.rowsOnes());
 
-      if (h.found()) {
+      // Build DLX structure
+      ColumnObject h = DLX.buildSparseMatrix(matrix);
+
+      // Mark board-cell columns as OPTIONAL
+      int optionalCols = colCount - primaryCols;
+      DLX.setColumnsAsOptional(h, primaryCols, optionalCols);
+
+      ExistsProcessor proc = new ExistsProcessor();
+
+      // Solve (true = use S-heuristic)
+      DLX.solve(h, true, proc);
+
+      if (proc.found()) {
         fitsCount++;
-        // Optional debug:
         System.out.printf("Space %d fits! -  Total fits = %d\n", idx, fitsCount);
-        log.add("Space %d fits! -  Total fits = %d", idx, fitsCount);
       }
     }
 
-    System.out.printf("Result part 1: %s\n", fitsCount);
     log.add("Result part 1: %s", fitsCount);
+  }
+
+  private static byte[][] toByteMatrix(int colCount, int[][] rowsOnes) {
+    byte[][] m = new byte[rowsOnes.length][colCount];
+    for (int i = 0; i < rowsOnes.length; i++) {
+      for (int c : rowsOnes[i]) {
+        m[i][c] = 1;
+      }
+    }
+    return m;
+  }
+
+  public static final class ExistsProcessor implements DLXResultProcessor {
+    private boolean found = false;
+
+    public boolean found() {
+      return found;
+    }
+
+    @Override
+    public boolean processResult(DLXResult result) {
+      found = true;
+      return false; // STOP after first solution
+    }
   }
 
   @Override
